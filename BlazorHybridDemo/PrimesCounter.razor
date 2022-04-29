@@ -1,0 +1,41 @@
+﻿<h1>Primes Counter</h1>
+<p>@_output</p>
+<button class="btn btn-primary" @onclick="CountPrimesSingleThreaded">Single Threaded</button>
+<button class="btn btn-primary" @onclick="CountPrimesMultiThreaded">Multi Threaded</button>
+
+@code {
+    private string _output = "Not yet executed";
+
+    private void CountPrimesSingleThreaded() {
+        int total = 0;
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        for (int n = 1; n <= 20_000_000; n++) {
+            if (IsPrime(n)) System.Threading.Interlocked.Increment(ref total);
+        }
+        sw.Stop();
+        _output = $"Single Threaded: {total} Primes in {sw.Elapsed}";
+    }
+
+     private void CountPrimesMultiThreaded() {
+        int total = 0;
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        Parallel.For(1, 20_000_001, n => {
+            if (IsPrime(n)) System.Threading.Interlocked.Increment(ref total);
+        });
+        sw.Stop();
+        _output = $"Multi Threaded: {total} Primes in {sw.Elapsed}";
+    }
+
+    public static bool IsPrime(int number) {
+        if ((number % 2) == 0) {
+            return number == 2;
+        }
+        int sqrt = (int)Math.Sqrt(number);
+        for (int t = 3; t <= sqrt; t = t + 2) {
+            if (number % t == 0) {
+                return false;
+            }
+        }
+        return number != 1;
+    }
+}
